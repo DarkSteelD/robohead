@@ -32,12 +32,12 @@ class STD_ATTENTION():
         # Добавить остановку текущего аудио, и его запоминание
 
         if self.srv_display_player!=None:
-            path = "/attention.png" # Change it
+            path = "/Alex.png" # Change it
             self.srv_display_player(self._script_path+path)
 
 
         if self.srv_set_neck!=None:
-            neck_angle_v = 15 # Change it
+            neck_angle_v = 30 # Change it
 
             rad = math.radians(self.sound_direction)
             x = math.cos(rad)
@@ -53,12 +53,12 @@ class STD_ATTENTION():
             self.srv_set_neck(neck_angle_v, neck_angle_h, duration)
         
         if self.srv_set_ears!=None:
-            ear_angle_l = 10 # Change it
-            ear_angle_r = 10 # Change it
+            ear_angle_l = 80 # Change it
+            ear_angle_r = 80 # Change it
             self.srv_set_ears(ear_angle_l, ear_angle_r)
 
         if self.srv_play_sound!=None:
-            path = "/attention.mp3" # Change it
+            path = "/attention (1).mp3" # Change it
             isBlocking = True # Change it
             self.srv_play_sound(self._script_path+path, isBlocking)
         
