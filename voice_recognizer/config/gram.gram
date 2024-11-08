@@ -4,7 +4,9 @@ grammar robot_cmd;
 
 public <commands> = <command> ;
 
-<command> = <command_1> | <command_2> | <command_3> | <command_4> | <command_5> | <command_6> | <command_7>;
+<command> = <command_1> | <command_2> | <command_3> | <command_4> | <command_5> | <command_6> | <command_7> 
+          | <command_8> | <command_9> | <command_10> | <command_11> | <command_12> | <command_13> | <command_14>
+          | <command_15> | <command_16> | <command_17> | <command_18> ;
 
 <command_1> = голос ;
 <command_2> = дай ( другую | левую | правую ) лапу ;
@@ -13,3 +15,14 @@ public <commands> = <command> ;
 <command_5> = вставай ;
 <command_6> = отключись ;
 <command_7> = что видишь ;
+<command_8> = иди вперед ;
+<command_9> = остановись ;
+<command_10> = следуй за мной ;
+<command_11> = вернись на базу ;
+<command_12> = включи камеру ;
+<command_13> = сканируй ;
+<command_14> = отправь отчет ;
+<command_15> = леха ;
+<command_16> = прутский ;
+<command_17> = разворот влево ;
+<command_18> = разворот вправо ;
