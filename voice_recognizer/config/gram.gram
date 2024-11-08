@@ -6,22 +6,22 @@ public <commands> = <command> ;
 
 <command> = <command_1> | <command_2> | <command_3> | <command_4> | <command_5> | <command_6> | <command_7> 
           | <command_8> | <command_9> | <command_10> | <command_11> | <command_12> | <command_13> | <command_14>
-          | <command_15> | <command_17> | <command_18> ;
+          | <command_15> | <command_16> | <command_17> ;
 
-<command_1> = скажи свой голос ;
-<command_2> = дай мне лапу ;
-<command_3> = можешь сесть ;
-<command_4> = ляг рядом ;
-<command_5> = пора вставать ;
-<command_6> = отключи режим ;
-<command_7> = что ты видишь ;
-<command_8> = сделай шаг вперед ;
-<command_9> = остановись там ;
-<command_10> = следуй за мной ;
-<command_11> = вернись обратно на базу ;
-<command_12> = включи видеокамеру ;
-<command_13> = начинай сканирование ;
-<command_14> = отправь отчет сейчас ;
-<command_15> = позови леху ;
-<command_16> = развернись влево ;
-<command_17> = развернись вправо ;
+<command_1> =  голос ;
+<command_2> =  лапу ;
+<command_3> = садись  ;
+<command_4> = пригнись ;
+<command_5> = вставай ;
+<command_6> = отключи звук ;
+<command_7> = осмотри ;
+<command_8> = двигай вперед ;
+<command_9> = прекрати движение ;
+<command_10> = следуй рядом ;
+<command_11> = вернись домой ;
+<command_12> = активируй камеру ;
+<command_13> = начни сканирование ;
+<command_14> = отправь отчет ;
+<command_15> = покажи танец ;
+<command_16> = поверни влево ;
+<command_17> = поверни вправо ;
