@@ -21,7 +21,7 @@ from actions.std_sleep import std_sleep
 from actions.std_wakeup import std_wakeup
 from actions.std_low_bat import std_low_bat
 from actions.std_camera import std_camera
-from actions.std_nee import std_sit
+from actions.std_nee import std_nee
 # from .actions.std_attention import std_attention
 # import .actions.std_lay.std_lay
 # import .actions.std_paw.std_paw
@@ -337,7 +337,7 @@ class HeadController():
                 resp = self.action_std_wakeup.start_action()
             elif cmd=="поклон":
                 importlib.reload(std_nee)
-                self.action_std_sit = std_sit.STD_SIT(srv_display_player=self._service_display_player,
+                self.action_std_sit = std_nee.STD_NEE(srv_display_player=self._service_display_player,
                                             srv_set_neck=self._service_set_neck,
                                             srv_set_ears=self._service_set_ears,
                                             srv_play_sound=self._service_play_sound,
