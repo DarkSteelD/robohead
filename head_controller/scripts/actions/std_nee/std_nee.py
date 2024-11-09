@@ -1,5 +1,5 @@
 import os
-class STD_SIT():
+class STD_NEE():
     def __init__(self, srv_display_player=None, srv_set_neck=None, srv_set_ears=None,
                 srv_play_sound=None, srv_mors_mode=None, srv_mors_action=None,
                 srv_mors_cmd_vel=None, srv_mors_cmd_pos=None, srv_mors_ef_pos=None,
@@ -46,5 +46,5 @@ class STD_SIT():
         self.srv_play_sound(self._script_path+path, isBlocking)
 
         if self.srv_mors_action!=None:
-            self.srv_mors_action(1) # встаем
-            self.srv_mors_action(6) # садимся
+            self.srv_mors_action(5) # встаем
+            self.srv_mors_action(7) # садимся
