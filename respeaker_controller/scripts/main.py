@@ -271,8 +271,9 @@ class ReSpeakerAudio(object):
             self.stream.start_stream()
 
     def stop(self):
-        if self.stream.is_active():
-            self.stream.stop_stream()
+        if self.stream:
+            if self.stream.is_active():
+                self.stream.stop_stream()
 
 
 

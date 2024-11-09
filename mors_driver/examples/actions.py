@@ -10,7 +10,7 @@ from mors.srv import QuadrupedCmd, QuadrupedCmdResponse
 
 # call robot_action service
 def set_action_client(action:int) -> QuadrupedCmdResponse:
-    rospy.wait_for_service('SetMorsAction')
+    rospy.wait_for_service('/action_robot')
     try:
         set_action = rospy.ServiceProxy('SetMorsAction', QuadrupedCmd)
         resp = set_action(action)
