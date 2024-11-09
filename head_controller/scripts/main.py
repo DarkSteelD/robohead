@@ -21,7 +21,7 @@ from actions.std_sleep import std_sleep
 from actions.std_wakeup import std_wakeup
 from actions.std_low_bat import std_low_bat
 from actions.std_camera import std_camera
-
+from actions.std_nee import std_sit
 # from .actions.std_attention import std_attention
 # import .actions.std_lay.std_lay
 # import .actions.std_paw.std_paw
@@ -335,6 +335,23 @@ class HeadController():
                                             srv_mors_stride_height=self._srv_mors_stride_height,
                                             sound_direction=self.__sound_direction)
                 resp = self.action_std_wakeup.start_action()
+            elif cmd=="поклон":
+                importlib.reload(std_nee)
+                self.action_std_sit = std_sit.STD_SIT(srv_display_player=self._service_display_player,
+                                            srv_set_neck=self._service_set_neck,
+                                            srv_set_ears=self._service_set_ears,
+                                            srv_play_sound=self._service_play_sound,
+                                            srv_mors_mode=self._srv_mors_mode,
+                                            srv_mors_action=self._srv_mors_action,
+                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
+                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
+                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
+                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
+                                            srv_mors_stride_height=self._srv_mors_stride_height,
+                                            sound_direction=self.__sound_direction)
+                resp = self.action_std_sit.start_action()
 
         importlib.reload(std_state)
         self.action_std_state = std_state.STD_STATE(srv_display_player=self._service_display_player,
