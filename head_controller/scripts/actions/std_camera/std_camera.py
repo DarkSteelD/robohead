@@ -9,7 +9,9 @@ from mors_driver.srv import TwistDuration, TwistDurationRequest
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import BatteryState
 import evdev, select
-from ultralytics import YOLO
+import requests
+import numpy as np
+from std_msgs.msg import Int32
 
 class STD_CAMERA():
     def __init__(self, srv_display_player=None, srv_set_neck=None, srv_set_ears=None,
@@ -33,7 +35,6 @@ class STD_CAMERA():
         self.srv_mors_joints_kd=srv_mors_joints_kd
         self.srv_mors_stride_height=srv_mors_stride_height
         self.sound_direction=sound_direction
-        self.model = YOLO("yolov5s.pt")  
         self._script_path = os.path.dirname(os.path.abspath(__file__))
         
     def start_action(self)->int:
@@ -102,15 +103,30 @@ class STD_CAMERA():
 
     def img_proc(self, image_msg:Image):
         cv_image = self.cvBridge.imgmsg_to_cv2(image_msg, "bgr8")
+        rospy.logwarn("Got image")
         cv_image = cv2.resize(cv_image, (1080, 1080))
-        results = self.model(cv_image)  # Выполнение распознавания
-        for result in results:
-            for obj in result.boxes:
-                x1, y1, x2, y2 = map(int, obj.xyxy[0])
-                label = obj.cls  # Имя класса объекта
-                conf = obj.conf  # Уверенность
-                cv2.rectangle(cv_image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.putText(cv_image, f"{label} {conf:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        _, encoded_image = cv2.imencode('.jpg', cv_image)
+        rospy.logerr("Got image")
+        # Convert the encoded image to bytes
+        image_bytes = encoded_image.tobytes()
+        self.srv_mors_action(1)
+        # Make the POST request to your server
+        url = "http://192.168.1.128:5000/upload"
+        try:
+            response = requests.post(url, files={"image": ("image.jpg", image_bytes, "image/jpeg")}, timeout=5)
+            if response.status_code == 200:
+                data = response.json()
+                direction = data.get('direction', 1)  # По умолчанию назад
+                rospy.loginfo(f"Received direction: {direction}")
+                # Публикуем направление в топик /walk_direction
+                status_pub = rospy.Publisher("/head/status", true, queue_size=10)
+                rospy.Subscriber("/walk_direction", Int32(direction), self.walk_direction_callback)
+            else:
+                rospy.logerr(f"Server returned status code {response.status_code}")
+        except requests.exceptions.RequestException as e:
+            rospy.logerr(f"Failed to send image: {e}")
+
+        rospy.loginfo("Sent image", response)
         cv2.circle(cv_image, self.p, 200, (255,255,255), -1)
         font                   = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (self.p[0]-70, self.p[1]-70)
@@ -126,4 +142,6 @@ class STD_CAMERA():
             thickness,
             lineType)
         self.image_pub.publish(self.cvBridge.cv2_to_imgmsg(cv_image, encoding="bgr8")) 
+        
+        time.sleep(10)
         return 0

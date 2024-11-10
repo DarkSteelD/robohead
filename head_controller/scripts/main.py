@@ -6,6 +6,7 @@ import os
 import sys
 # SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from std_msgs.msg import String, Bool, Int32, Float32
 
 
 import rospy
@@ -72,6 +73,9 @@ class HeadController():
         self.status_pub = rospy.Publisher("/head/status", Bool, queue_size=10)
         self.cmd_vel_msg = Twist()
 
+        self.walk_direction = 0
+        rospy.Subscriber("/walk_direction", Int32, self.walk_direction_callback)
+
         self._service_display_player = rospy.ServiceProxy('displayControllerPlay', displayControllerPlay)
         self._service_set_neck = rospy.ServiceProxy('NeckSetAngle', NeckSetAngle)
         self._service_set_ears = rospy.ServiceProxy('EarsSetAngle', EarsSetAngle)
@@ -117,7 +121,7 @@ class HeadController():
 
         rospy.Subscriber("/head/sound_direction", Int32, self.__sound_direction_callback)
         rospy.Subscriber("/head/bat", BatteryState, self.__battery_state_callback)
-        
+
         self._hand = 'left'
         self.is_action = False
         self._cmd = None
@@ -128,10 +132,63 @@ class HeadController():
         time.sleep(15)
         self.run()
 
+    def walk_direction_callback(self, direction: Int32):
+        self.walk_direction = direction
+
     def imu_callback(self, data: Vector3):
-        self.cmd_vel_msg.linear.x = 0.1
-        self.cmd_vel_msg.linear.y = 0
-        self.cmd_vel_msg.angular.z = 0
+
+        self.cmd_vel_msg = Twist()
+
+        this_cmd_vel_msg = TwistDuration()
+
+        if self.walk_direction == 0:
+
+            this_cmd_vel_msg.data.linear.x = 0.4
+            this_cmd_vel_msg.data.linear.y = 0
+            this_cmd_vel_msg.data.angular.z = 0
+            this_cmd_vel_msg.duration = 1
+            self._srv_mors_cmd_vel(this_cmd_vel_msg)
+
+            self.cmd_vel_msg.linear.x = 0.1
+            self.cmd_vel_msg.linear.y = 0
+            self.cmd_vel_msg.angular.z = 0
+
+        elif self.walk_direction == 1:
+
+            this_cmd_vel_msg.data.linear.x = -0.1
+            this_cmd_vel_msg.data.linear.y = 0
+            this_cmd_vel_msg.data.angular.z = 0
+            this_cmd_vel_msg.duration = 1
+            self._srv_mors_cmd_vel(this_cmd_vel_msg)
+
+            self.cmd_vel_msg.linear.x = -0.1
+            self.cmd_vel_msg.linear.y = 0
+            self.cmd_vel_msg.angular.z = 0
+
+        elif self.walk_direction == 2:
+
+            this_cmd_vel_msg.data.linear.x = 0
+            this_cmd_vel_msg.data.linear.y = 0.1
+            this_cmd_vel_msg.data.angular.z = 0
+            this_cmd_vel_msg.duration = 1
+            self._srv_mors_cmd_vel(this_cmd_vel_msg)
+
+            self.cmd_vel_msg.linear.x = 0
+            self.cmd_vel_msg.linear.y = 0.1
+            self.cmd_vel_msg.angular.z = 0
+
+        elif self.walk_direction == 3:
+
+            this_cmd_vel_msg.data.linear.x = 0.1
+            this_cmd_vel_msg.data.linear.y = -0.1
+            this_cmd_vel_msg.data.angular.z = 0
+            this_cmd_vel_msg.duration = 1
+            self._srv_mors_cmd_vel(this_cmd_vel_msg)
+
+            self.cmd_vel_msg.linear.x = 0
+            self.cmd_vel_msg.linear.y = -0.1
+            self.cmd_vel_msg.angular.z = 0
+
         self.cmd_vel_pub.publish(self.cmd_vel_msg)
 
     def __battery_state_callback(self, msg:BatteryState):
@@ -184,206 +241,209 @@ class HeadController():
             return   
         rospy.sleep(0.1)
         cmd = self._cmd
-        if cmd != None:
-            if cmd=="голос":
-                importlib.reload(std_voice)
-                self.action_std_voice = std_voice.STD_VOICE(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_voice.start_action()
+        #if cmd != None:
+            # if cmd=="голос":
+            #     importlib.reload(std_voice)
+            #     self.action_std_voice = std_voice.STD_VOICE(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_voice.start_action()
 
-            elif cmd=="сидеть":
-                importlib.reload(std_sit)
-                self.action_std_sit = std_sit.STD_SIT(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_sit.start_action()
+            # elif cmd=="сидеть":
+            #     importlib.reload(std_sit)
+            #     self.action_std_sit = std_sit.STD_SIT(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_sit.start_action()
 
-            elif cmd=="лежать":
-                importlib.reload(std_lay)
-                self.action_std_lay = std_lay.STD_LAY(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_lay.start_action()
-            elif cmd=="что видишь":
-                importlib.reload(std_camera)
-                self.action_std_camera = std_camera.STD_CAMERA(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_camera.start_action()
+            # elif cmd=="лежать":
+            #     importlib.reload(std_lay)
+            #     self.action_std_lay = std_lay.STD_LAY(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_lay.start_action()
+            #if cmd=="что видишь":
+        rospy.logwarn("Started commands")
 
-            elif cmd=="дай левую лапу":
-                importlib.reload(std_paw)
-                self.action_std_paw = std_paw.STD_PAW(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_paw.start_action("left")
-                self._last_paw = 'left'
+        importlib.reload(std_camera)
+        self.action_std_camera = std_camera.STD_CAMERA(srv_display_player=self._service_display_player,
+                                    srv_set_neck=self._service_set_neck,
+                                    srv_set_ears=self._service_set_ears,
+                                    srv_play_sound=self._service_play_sound,
+                                    srv_mors_mode=self._srv_mors_mode,
+                                    srv_mors_action=self._srv_mors_action,
+                                    srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+                                    srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+                                    srv_mors_ef_pos=self._srv_mors_ef_pos,
+                                    srv_mors_joint_pos=self._srv_mors_joint_pos,
+                                    srv_mors_joints_kp=self._srv_mors_joints_kp,
+                                    srv_mors_joints_kd=self._srv_mors_joints_kd,
+                                    srv_mors_stride_height=self._srv_mors_stride_height,
+                                    sound_direction=self.__sound_direction)
+        resp = self.action_std_camera.start_action()
+        rospy.logwarn("Finished commands")
 
-            elif cmd=="дай правую лапу":
-                importlib.reload(std_paw)
-                self.action_std_paw = std_paw.STD_PAW(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_paw.start_action("right")
-                self._last_paw = 'right'
+            # elif cmd=="дай левую лапу":
+            #     importlib.reload(std_paw)
+            #     self.action_std_paw = std_paw.STD_PAW(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_paw.start_action("left")
+            #     self._last_paw = 'left'
 
-            elif cmd=="дай другую лапу":
-                importlib.reload(std_paw)
-                self.action_std_paw = std_paw.STD_PAW(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                if self._last_paw == 'left':
-                    resp = self.action_std_paw.start_action("right")
-                    self._last_paw = 'right'
-                elif self._last_paw == 'right':
-                    resp = self.action_std_paw.start_action("left")
-                    self._last_paw = 'left'
-            elif cmd=="отключись":
-                importlib.reload(std_sleep)
-                self.action_std_sleep = std_sleep.STD_SLEEP(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_sleep.start_action()
-            elif cmd=="вставай":
-                importlib.reload(std_wakeup)
-                self.action_std_wakeup = std_wakeup.STD_WAKEUP(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_wakeup.start_action()
-            elif cmd=="поклон":
-                importlib.reload(std_nee)
-                self.action_std_sit = std_nee.STD_NEE(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_sit.start_action()
-            elif cmd=="танец":
-                importlib.reload(std_move)
-                self.action_std_sit = std_move.STD_MOVE(srv_display_player=self._service_display_player,
-                                            srv_set_neck=self._service_set_neck,
-                                            srv_set_ears=self._service_set_ears,
-                                            srv_play_sound=self._service_play_sound,
-                                            srv_mors_mode=self._srv_mors_mode,
-                                            srv_mors_action=self._srv_mors_action,
-                                            srv_mors_cmd_vel=self._srv_mors_cmd_vel,
-                                            srv_mors_cmd_pos=self._srv_mors_cmd_pos,
-                                            srv_mors_ef_pos=self._srv_mors_ef_pos,
-                                            srv_mors_joint_pos=self._srv_mors_joint_pos,
-                                            srv_mors_joints_kp=self._srv_mors_joints_kp,
-                                            srv_mors_joints_kd=self._srv_mors_joints_kd,
-                                            srv_mors_stride_height=self._srv_mors_stride_height,
-                                            sound_direction=self.__sound_direction)
-                resp = self.action_std_sit.start_action()
+            # elif cmd=="дай правую лапу":
+            #     importlib.reload(std_paw)
+            #     self.action_std_paw = std_paw.STD_PAW(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_paw.start_action("right")
+            #     self._last_paw = 'right'
+
+            # elif cmd=="дай другую лапу":
+            #     importlib.reload(std_paw)
+            #     self.action_std_paw = std_paw.STD_PAW(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     if self._last_paw == 'left':
+            #         resp = self.action_std_paw.start_action("right")
+            #         self._last_paw = 'right'
+            #     elif self._last_paw == 'right':
+            #         resp = self.action_std_paw.start_action("left")
+            #         self._last_paw = 'left'
+            # elif cmd=="отключись":
+            #     importlib.reload(std_sleep)
+            #     self.action_std_sleep = std_sleep.STD_SLEEP(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_sleep.start_action()
+            # elif cmd=="вставай":
+            #     importlib.reload(std_wakeup)
+            #     self.action_std_wakeup = std_wakeup.STD_WAKEUP(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_wakeup.start_action()
+            # elif cmd=="поклон":
+            #     importlib.reload(std_nee)
+            #     self.action_std_sit = std_nee.STD_NEE(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_sit.start_action()
+            # elif cmd=="танец":
+            #     importlib.reload(std_move)
+            #     self.action_std_sit = std_move.STD_MOVE(srv_display_player=self._service_display_player,
+            #                                 srv_set_neck=self._service_set_neck,
+            #                                 srv_set_ears=self._service_set_ears,
+            #                                 srv_play_sound=self._service_play_sound,
+            #                                 srv_mors_mode=self._srv_mors_mode,
+            #                                 srv_mors_action=self._srv_mors_action,
+            #                                 srv_mors_cmd_vel=self._srv_mors_cmd_vel,
+            #                                 srv_mors_cmd_pos=self._srv_mors_cmd_pos,
+            #                                 srv_mors_ef_pos=self._srv_mors_ef_pos,
+            #                                 srv_mors_joint_pos=self._srv_mors_joint_pos,
+            #                                 srv_mors_joints_kp=self._srv_mors_joints_kp,
+            #                                 srv_mors_joints_kd=self._srv_mors_joints_kd,
+            #                                 srv_mors_stride_height=self._srv_mors_stride_height,
+            #                                 sound_direction=self.__sound_direction)
+            #     resp = self.action_std_sit.start_action()
 
         importlib.reload(std_state)
         self.action_std_state = std_state.STD_STATE(srv_display_player=self._service_display_player,
