@@ -35,7 +35,7 @@
 	<node name="asr_control" pkg="voice_recognizer" type="asr_control.py" output="screen" >
 		<param name="hmm" value="$(arg hmm)" />
 		<param name="dict" value="$(arg dict)" />
-		<param name="gram" value="$(arg gram)" />
+		<param name="gram" value="$(arg gram)" />	
 		<param name="grammar" value="$(arg grammar)" />
 		<param name="rule" value="$(arg rule)" />
 	</node>
