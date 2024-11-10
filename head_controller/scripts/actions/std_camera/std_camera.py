@@ -9,6 +9,7 @@ from mors_driver.srv import TwistDuration, TwistDurationRequest
 from geometry_msgs.msg import Twist
 from sensor_msgs.msg import BatteryState
 import evdev, select
+from ultralytics import YOLO
 
 class STD_CAMERA():
     def __init__(self, srv_display_player=None, srv_set_neck=None, srv_set_ears=None,
@@ -32,7 +33,7 @@ class STD_CAMERA():
         self.srv_mors_joints_kd=srv_mors_joints_kd
         self.srv_mors_stride_height=srv_mors_stride_height
         self.sound_direction=sound_direction
-
+        self.model = YOLO("yolov5s.pt")  
         self._script_path = os.path.dirname(os.path.abspath(__file__))
         
     def start_action(self)->int:
@@ -102,6 +103,14 @@ class STD_CAMERA():
     def img_proc(self, image_msg:Image):
         cv_image = self.cvBridge.imgmsg_to_cv2(image_msg, "bgr8")
         cv_image = cv2.resize(cv_image, (1080, 1080))
+        results = self.model(cv_image)  # Выполнение распознавания
+        for result in results:
+            for obj in result.boxes:
+                x1, y1, x2, y2 = map(int, obj.xyxy[0])
+                label = obj.cls  # Имя класса объекта
+                conf = obj.conf  # Уверенность
+                cv2.rectangle(cv_image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv2.putText(cv_image, f"{label} {conf:.2f}", (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         cv2.circle(cv_image, self.p, 200, (255,255,255), -1)
         font                   = cv2.FONT_HERSHEY_SIMPLEX
         bottomLeftCornerOfText = (self.p[0]-70, self.p[1]-70)

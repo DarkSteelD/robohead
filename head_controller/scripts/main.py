@@ -23,6 +23,8 @@ from actions.std_low_bat import std_low_bat
 from actions.std_camera import std_camera
 from actions.std_nee import std_nee
 from actions.std_move import std_move
+from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Twist
 # from .actions.std_attention import std_attention
 # import .actions.std_lay.std_lay
 # import .actions.std_paw.std_paw
@@ -63,6 +65,12 @@ class HeadController():
         rospy.wait_for_service('NeckSetAngle')
         rospy.wait_for_service('EarsSetAngle')
         rospy.wait_for_service('playSound')
+
+        rospy.Subscriber('imu/data', Vector3, self.imu_callback, queue_size=1)
+
+        self.cmd_vel_pub = rospy.Publisher("/head/cmd_vel", Twist, queue_size=10)
+        self.status_pub = rospy.Publisher("/head/status", Bool, queue_size=10)
+        self.cmd_vel_msg = Twist()
 
         self._service_display_player = rospy.ServiceProxy('displayControllerPlay', displayControllerPlay)
         self._service_set_neck = rospy.ServiceProxy('NeckSetAngle', NeckSetAngle)
@@ -119,6 +127,12 @@ class HeadController():
         self._last_paw = 'left'
         time.sleep(15)
         self.run()
+
+    def imu_callback(self, data: Vector3):
+        self.cmd_vel_msg.linear.x = 0.1
+        self.cmd_vel_msg.linear.y = 0
+        self.cmd_vel_msg.angular.z = 0
+        self.cmd_vel_pub.publish(self.cmd_vel_msg)
 
     def __battery_state_callback(self, msg:BatteryState):
         self._battery_voltage = msg.voltage
