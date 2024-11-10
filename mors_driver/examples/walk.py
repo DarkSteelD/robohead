@@ -89,36 +89,36 @@ if __name__ == '__main__':
     srv_goal_vel(request)
     rospy.sleep(1) # Ждем время торможения
 
-    # Идем влево со скоростью 0.2 м/сек: разгоняемся до этой скорости за 1.5 сек, шагаем 3 сек
-    request.data.linear.x = 0
-    request.data.linear.y = 0.2
-    request.data.angular.z = 0
-    request.duration = 1.5
-    srv_goal_vel(request)
-    rospy.sleep(4.5) # Ждем время разгона + время шагания
+    # # Идем влево со скоростью 0.2 м/сек: разгоняемся до этой скорости за 1.5 сек, шагаем 3 сек
+    # request.data.linear.x = 0
+    # request.data.linear.y = 0.2
+    # request.data.angular.z = 0
+    # request.duration = 1.5
+    # srv_goal_vel(request)
+    # rospy.sleep(4.5) # Ждем время разгона + время шагания
 
-    # Плавно останавливаемся
-    request.data.linear.x = 0
-    request.data.linear.y = 0
-    request.data.angular.z = 0
-    request.duration = 1
-    srv_goal_vel(request)
-    rospy.sleep(1) # Ждем время торможения
+    # # Плавно останавливаемся
+    # request.data.linear.x = 0
+    # request.data.linear.y = 0
+    # request.data.angular.z = 0
+    # request.duration = 1
+    # srv_goal_vel(request)
+    # rospy.sleep(1) # Ждем время торможения
     
-    # Поворачиваем налево с радиусом поворота 0.7 метра: разгон 1.5 с, шагание 3 с
-    request.data.linear.x = 0.3
-    request.data.linear.y = 0.0
-    request.data.angular.z = 0.3
-    request.duration = 1.5
-    srv_goal_vel(request)
-    rospy.sleep(4.5) # Ждем время разгона + время шагания
+    # # Поворачиваем налево с радиусом поворота 0.7 метра: разгон 1.5 с, шагание 3 с
+    # request.data.linear.x = 0.3
+    # request.data.linear.y = 0.0
+    # request.data.angular.z = 0.3
+    # request.duration = 1.5
+    # srv_goal_vel(request)
+    # rospy.sleep(4.5) # Ждем время разгона + время шагания
 
-    # Плавно останавливаемся
-    request.data.linear.x = 0
-    request.data.linear.y = 0
-    request.data.angular.z = 0
-    request.duration = 1
-    srv_goal_vel(request)
-    rospy.sleep(1) # Ждем время торможения
+    # # Плавно останавливаемся
+    # request.data.linear.x = 0
+    # request.data.linear.y = 0
+    # request.data.angular.z = 0
+    # request.duration = 1
+    # srv_goal_vel(request)
+    # rospy.sleep(1) # Ждем время торможения
 
     set_action_client(2)
